@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { PhoneNumber } from "@/types";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import * as XLSX from 'xlsx';
 
 interface NumbersPanelProps {
   numbers: PhoneNumber[];
@@ -31,21 +32,36 @@ export function NumbersPanel({ numbers, onUpload, onClear }: NumbersPanelProps) 
     failed: numbers.filter(n => n.status === 'failed').length,
   };
 
-  const handleFileSelect = (file: File) => {
-    // Simular leitura do arquivo
-    const mockNumbers = [
-      "5511999999999",
-      "5511988888888",
-      "5511977777777",
-      "5511966666666",
-      "5511955555555",
-    ];
-    
-    onUpload(mockNumbers);
-    toast({
-      title: "Arquivo carregado",
-      description: `${mockNumbers.length} números foram importados com sucesso.`,
-    });
+  const handleFileSelect = async (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = new Uint8Array(e.target?.result as ArrayBuffer);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      
+      // Assume numbers are in the first column
+      const numbers: string[] = [];
+      jsonData.forEach((row: any) => {
+        if (row[0] && typeof row[0] === 'string') {
+          // Clean the number: remove spaces, dashes, etc.
+          const num = row[0].replace(/\D/g, '');
+          if (num.length >= 10) { // Basic validation
+            numbers.push(num);
+          }
+        } else if (row[0] && typeof row[0] === 'number') {
+          numbers.push(row[0].toString());
+        }
+      });
+      
+      onUpload(numbers);
+      toast({
+        title: "Arquivo carregado",
+        description: `${numbers.length} números foram importados com sucesso.`,
+      });
+    };
+    reader.readAsArrayBuffer(file);
   };
 
   const handleDrop = (e: React.DragEvent) => {

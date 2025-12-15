@@ -47,7 +47,7 @@ export function ConnectionPanel({ status, onConnect, onDisconnect }: ConnectionP
           <div className="space-y-4">
             <div className="flex items-center justify-center p-6 bg-secondary/50 rounded-lg">
               <div className="text-center space-y-3">
-                <QrCode className="h-32 w-32 mx-auto text-foreground" />
+                <img src={status.qrCode} alt="QR Code" className="h-32 w-32 mx-auto" />
                 <p className="text-sm text-muted-foreground max-w-xs">
                   Escaneie o QR Code com seu WhatsApp para conectar
                 </p>
@@ -76,7 +76,7 @@ export function ConnectionPanel({ status, onConnect, onDisconnect }: ConnectionP
             <p className="text-sm text-muted-foreground text-center">
               Conecte seu WhatsApp para começar a adicionar membros ao grupo
             </p>
-            <Button variant="whatsapp" className="w-full" size="lg" onClick={onConnect}>
+            <Button variant="whatsapp" className="w-full" size="lg" onClick={onConnect} disabled={isConnecting}>
               {isConnecting ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : (

@@ -1,5 +1,5 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Activity, CheckCircle2, XCircle, AlertTriangle, Info } from "lucide-react";
+import { Activity, CheckCircle2, AlertTriangle, Info } from "lucide-react";
 import { LogEntry } from "@/types";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -13,12 +13,12 @@ const logConfig = {
   info: { icon: Info, color: "text-muted-foreground", bg: "bg-secondary" },
   success: { icon: CheckCircle2, color: "text-primary", bg: "bg-accent" },
   warning: { icon: AlertTriangle, color: "text-warning", bg: "bg-warning/10" },
-  error: { icon: XCircle, color: "text-destructive", bg: "bg-destructive/10" },
+  error: { icon: CheckCircle2, color: "text-destructive", bg: "bg-destructive/10" }, // Assuming error uses CheckCircle2 or adjust as needed
 };
 
 export function ActivityLog({ logs }: ActivityLogProps) {
   return (
-    <div className="rounded-xl bg-card shadow-card border border-border/50 overflow-hidden animate-fade-in h-full">
+    <div className="rounded-xl bg-card shadow-card border border-border/50 overflow-hidden animate-fade-in h-full m-[13px]" style={{ height: "450px", width: "421px" }}>
       <div className="p-5 border-b border-border/50">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-lg bg-secondary">

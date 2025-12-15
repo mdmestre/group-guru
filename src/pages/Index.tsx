@@ -54,18 +54,40 @@ const Index = () => {
   };
 
   // Handlers
-  const handleConnect = () => {
-    setConnection({ status: 'connecting', qrCode: 'mock-qr' });
-    
-    // Simulate connection after 3 seconds
-    setTimeout(() => {
-      setConnection({ status: 'connected' });
-      addLog('success', 'Conectado ao WhatsApp com sucesso!');
-      toast({
-        title: "Conectado!",
-        description: "Seu WhatsApp foi conectado com sucesso.",
-      });
-    }, 3000);
+  const handleConnect = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/connect', { method: 'POST' });
+      const data = await response.json();
+      if (data.status === 'connecting') {
+        let attempts = 0;
+        const maxAttempts = 30; // 30 seconds
+        // Poll for QR code
+        const pollQR = async () => {
+          attempts++;
+          const qrResponse = await fetch('http://localhost:3001/qr');
+          const qrData = await qrResponse.json();
+          if (qrData.qr) {
+            setConnection({ status: 'connecting', qrCode: qrData.qr });
+          } else if (qrData.connected) {
+            setConnection({ status: 'connected' });
+            addLog('success', 'Conectado ao WhatsApp com sucesso!');
+            toast({
+              title: "Conectado!",
+              description: "Seu WhatsApp foi conectado com sucesso.",
+            });
+          } else if (attempts < maxAttempts) {
+            setTimeout(pollQR, 1000); // Poll again
+          } else {
+            setConnection({ status: 'disconnected' });
+            addLog('error', 'Falha ao gerar QR code');
+          }
+        };
+        pollQR();
+      }
+    } catch (error) {
+      console.error('Erro ao conectar:', error);
+      addLog('error', 'Erro ao conectar ao WhatsApp');
+    }
   };
 
   const handleDisconnect = () => {
@@ -74,7 +96,12 @@ const Index = () => {
     addLog('info', 'Desconectado do WhatsApp');
   };
 
-  const handleUploadNumbers = (newNumbers: string[]) => {
+  const handleUploadNumbers = async (newNumbers: string[]) => {
+    await fetch('http://localhost:3001/upload-numbers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newNumbers }),
+    });
     const phoneNumbers: PhoneNumber[] = newNumbers.map((num, index) => ({
       id: `num-${Date.now()}-${index}`,
       number: num,
@@ -89,22 +116,27 @@ const Index = () => {
     addLog('info', 'Lista de números limpa');
   };
 
-  const handleStartCycle = () => {
-    setCycleStatus({
-      isRunning: true,
-      currentCycle: 1,
-      processedInCycle: 0,
-      nextCycleAt: new Date(Date.now() + config.cycleMinutes * 60 * 1000),
+  const handleStartCycle = async () => {
+    const response = await fetch('http://localhost:3001/start-cycle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ config }),
     });
-    addLog('success', 'Bot iniciado - Ciclo 1 começou');
+    const data = await response.json();
+    if (data.success) {
+      setCycleStatus(data.cycleStatus);
+      addLog('success', 'Bot iniciado - Ciclo 1 começou');
+    }
   };
 
-  const handlePauseCycle = () => {
+  const handlePauseCycle = async () => {
+    await fetch('http://localhost:3001/pause-cycle', { method: 'POST' });
     setCycleStatus(prev => ({ ...prev, isRunning: false, nextCycleAt: undefined }));
     addLog('warning', 'Bot pausado');
   };
 
-  const handleResetCycle = () => {
+  const handleResetCycle = async () => {
+    await fetch('http://localhost:3001/reset-cycle', { method: 'POST' });
     setCycleStatus({
       isRunning: false,
       currentCycle: 0,

@@ -16,7 +16,7 @@ export function Header() {
               <MessageCircle className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-foreground">WhatsApp Groups</h1>
+              <h1 className="text-lg font-bold text-foreground">WhatsApp Grupos</h1>
               <p className="text-xs text-muted-foreground hidden sm:block">Automação de Grupos</p>
             </div>
           </div>
