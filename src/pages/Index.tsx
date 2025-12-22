@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getSocket } from "@/lib/socket";
 import { Header } from "@/components/layout/Header";
 import { StatusCard } from "@/components/dashboard/StatusCard";
 import { ConnectionPanel } from "@/components/dashboard/ConnectionPanel";
@@ -43,7 +44,70 @@ const Index = () => {
     processedInCycle: 0,
   });
   const [numbers, setNumbers] = useState<PhoneNumber[]>([]);
+  const [groups, setGroups] = useState<Array<{id:string,nome:string,membros:number}>>([]);
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [logs, setLogs] = useState<LogEntry[]>(mockLogs);
+
+  // Use a single socket instance for real-time updates
+  useEffect(() => {
+    const socket = getSocket();
+    // expose for compatibility with other code
+    (window as any).socket = socket;
+
+    const onStatus = (data: any) => {
+      setConnection((prev) => {
+        if (data?.status === 'connecting') {
+          return { status: 'connecting', qrCode: data.qrCode ?? prev?.qrCode } as ConnectionStatus;
+        }
+        if (data?.status === 'connected') {
+          return { status: 'connected' } as ConnectionStatus;
+        }
+        return { status: 'disconnected' } as ConnectionStatus;
+      });
+      if (data.cycleStatus) setCycleStatus(data.cycleStatus);
+      if (data.numbers) setNumbers(data.numbers);
+      if (data.groups) {
+        setGroups(data.groups);
+        // if server includes selectedGroup, keep it
+        if (data.selectedGroup) setSelectedGroup(data.selectedGroup)
+      }
+    };
+
+    socket.on('status', onStatus);
+
+    // some servers may emit specific events
+    socket.on('qr', (qr: string) => {
+      setConnection({ status: 'connecting', qrCode: qr });
+    });
+    socket.on('connected', () => {
+      setConnection({ status: 'connected' });
+      addLog('success', 'Conectado ao WhatsApp com sucesso!');
+      toast({ title: 'Conectado!', description: 'Seu WhatsApp foi conectado com sucesso.' });
+      // fetch groups list from backend
+      (async () => {
+        try {
+          const res = await fetch('http://localhost:3001/groups')
+          const json = await res.json()
+          if (json?.success && json.grupos) setGroups(json.grupos)
+          if (json?.grupos?.length) setSelectedGroup(json.grupos[0].id)
+        } catch (e) {}
+      })()
+    });
+
+    // request initial status — when socket connects and also now if already connected
+    socket.on('connect', () => {
+      console.log('✅ Socket conectado');
+      socket.emit('get-status');
+    });
+    socket.emit('get-status');
+
+    return () => {
+      socket.off('status', onStatus);
+      socket.off('qr');
+      socket.off('connected');
+      socket.off('connect');
+    };
+  }, []);
 
   // Stats calculation
   const stats = {
@@ -54,41 +118,27 @@ const Index = () => {
   };
 
   // Handlers
-  const handleConnect = async () => {
+  const handleConnect = () => {
     try {
-      const response = await fetch('http://localhost:3001/connect', { method: 'POST' });
-      const data = await response.json();
-      if (data.status === 'connecting') {
-        let attempts = 0;
-        const maxAttempts = 30; // 30 seconds
-        // Poll for QR code
-        const pollQR = async () => {
-          attempts++;
-          const qrResponse = await fetch('http://localhost:3001/qr');
-          const qrData = await qrResponse.json();
-          if (qrData.qr) {
-            setConnection({ status: 'connecting', qrCode: qrData.qr });
-          } else if (qrData.connected) {
-            setConnection({ status: 'connected' });
-            addLog('success', 'Conectado ao WhatsApp com sucesso!');
-            toast({
-              title: "Conectado!",
-              description: "Seu WhatsApp foi conectado com sucesso.",
-            });
-          } else if (attempts < maxAttempts) {
-            setTimeout(pollQR, 1000); // Poll again
-          } else {
-            setConnection({ status: 'disconnected' });
-            addLog('error', 'Falha ao gerar QR code');
-          }
-        };
-        pollQR();
-      }
-    } catch (error) {
-      console.error('Erro ao conectar:', error);
-      addLog('error', 'Erro ao conectar ao WhatsApp');
+      const socket = getSocket();
+      socket.emit('connect-whatsapp');
+    } catch (err) {
+      console.warn('Falha ao emitir connect-whatsapp via socket:', err);
+      toast({ title: 'Conexão indisponível', description: 'Socket não inicializado.' });
     }
   };
+
+  const handleSelectGroup = async (groupId: string) => {
+    try {
+      await fetch('http://localhost:3001/set-group', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ groupId })
+      })
+      setSelectedGroup(groupId)
+      addLog('info', `Grupo selecionado: ${groupId}`)
+    } catch (e) {}
+  }
 
   const handleDisconnect = () => {
     setConnection({ status: 'disconnected' });
@@ -117,15 +167,33 @@ const Index = () => {
   };
 
   const handleStartCycle = async () => {
-    const response = await fetch('http://localhost:3001/start-cycle', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ config }),
-    });
-    const data = await response.json();
-    if (data.success) {
-      setCycleStatus(data.cycleStatus);
-      addLog('success', 'Bot iniciado - Ciclo 1 começou');
+    try {
+      // Garantir que a config enviada tem o groupId correto antes de iniciar
+      const finalConfig = {
+        ...config,
+        groupId: selectedGroup || config.groupId
+      };
+
+      const response = await fetch('http://localhost:3001/start-cycle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ config: finalConfig }),
+      });
+
+      if (!response.ok) throw new Error("Erro no servidor");
+
+      const data = await response.json();
+      
+      if (data.success && data.cycleStatus) {
+        setCycleStatus(data.cycleStatus);
+        addLog('success', 'Bot iniciado - Ciclo começou');
+        toast({ title: 'Sucesso!', description: 'O ciclo de adições foi iniciado.' });
+      } else {
+        toast({ variant: "destructive", title: 'Erro', description: data.message || 'Falha ao iniciar ciclo.' });
+      }
+    } catch (err) {
+      console.error("Erro ao iniciar ciclo:", err);
+      toast({ variant: "destructive", title: 'Erro de Conexão', description: 'Não foi possível falar com o servidor na porta 3001.' });
     }
   };
 
@@ -214,8 +282,11 @@ const Index = () => {
           <div className="space-y-6">
             <ConnectionPanel
               status={connection}
-              onConnect={handleConnect}
-              onDisconnect={handleDisconnect}
+                onConnect={handleConnect}
+                onDisconnect={handleDisconnect}
+              groups={groups}
+              selectedGroup={selectedGroup}
+              onSelectGroup={handleSelectGroup}
             />
             <CycleControl
               status={cycleStatus}

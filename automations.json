@@ -1,0 +1,18 @@
+[
+  {
+    "id": "1",
+    "name": "Boas-vindas",
+    "trigger": "mensagem contendo oi|olá",
+    "action": "Enviar mensagem de boas-vindas",
+    "isActive": true,
+    "executionCount": 0
+  },
+  {
+    "id": "2",
+    "name": "Follow-up 24h",
+    "trigger": "24h sem resposta",
+    "action": "Enviar lembrete",
+    "isActive": true,
+    "executionCount": 0
+  }
+]

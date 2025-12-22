@@ -23,7 +23,12 @@ export function CycleControl({ status, isConnected, onStart, onPause, onReset }:
     }
 
     const updateCountdown = () => {
-      const diff = differenceInSeconds(status.nextCycleAt!, new Date());
+      const next = new Date(status.nextCycleAt as any);
+      if (isNaN(next.getTime())) {
+        setCountdown(null);
+        return;
+      }
+      const diff = differenceInSeconds(next, new Date());
       if (diff <= 0) {
         setCountdown(null);
       } else {

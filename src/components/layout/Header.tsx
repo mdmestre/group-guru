@@ -1,10 +1,14 @@
-import { MessageCircle, Menu, X } from "lucide-react";
+import { MessageCircle, Menu, X, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { Link, useLocation } from "react-router-dom";
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
+
+  const isActive = (path: string) => location.pathname === path;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
@@ -16,16 +20,32 @@ export function Header() {
               <MessageCircle className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-foreground">WhatsApp Grupos</h1>
+              <h1 className="text-lg font-bold text-foreground">WhatsApp Groups</h1>
               <p className="text-xs text-muted-foreground hidden sm:block">Automação de Grupos</p>
             </div>
           </div>
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-6">
-            <a href="#" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+            <Link 
+              to="/" 
+              className={cn(
+                "text-sm font-medium transition-colors",
+                isActive("/") ? "text-primary" : "text-muted-foreground hover:text-primary"
+              )}
+            >
               Dashboard
-            </a>
+            </Link>
+            <Link 
+              to="/crm" 
+              className={cn(
+                "text-sm font-medium transition-colors flex items-center gap-1",
+                isActive("/crm") ? "text-primary" : "text-muted-foreground hover:text-primary"
+              )}
+            >
+              <Users className="h-4 w-4" />
+              CRM
+            </Link>
             <a href="#" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
               Relatórios
             </a>
@@ -56,17 +76,32 @@ export function Header() {
           mobileMenuOpen ? "max-h-48 pb-4" : "max-h-0"
         )}>
           <nav className="flex flex-col gap-2">
-            <a href="#" className="px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary rounded-lg transition-colors">
+            <Link 
+              to="/" 
+              className={cn(
+                "px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                isActive("/") ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-secondary"
+              )}
+              onClick={() => setMobileMenuOpen(false)}
+            >
               Dashboard
-            </a>
+            </Link>
+            <Link 
+              to="/crm" 
+              className={cn(
+                "px-3 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2",
+                isActive("/crm") ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-secondary"
+              )}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Users className="h-4 w-4" />
+              CRM
+            </Link>
             <a href="#" className="px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary rounded-lg transition-colors">
               Relatórios
             </a>
             <a href="#" className="px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary rounded-lg transition-colors">
               Ajuda
-            </a>
-            <a href="#" className="px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary rounded-lg transition-colors">
-              Documentação
             </a>
           </nav>
         </div>

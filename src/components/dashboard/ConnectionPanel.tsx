@@ -7,9 +7,12 @@ interface ConnectionPanelProps {
   status: ConnectionStatus;
   onConnect: () => void;
   onDisconnect: () => void;
+  groups?: Array<{ id: string; nome: string; membros: number }>
+  selectedGroup?: string | null
+  onSelectGroup?: (groupId: string) => void
 }
 
-export function ConnectionPanel({ status, onConnect, onDisconnect }: ConnectionPanelProps) {
+export function ConnectionPanel({ status, onConnect, onDisconnect, groups = [], selectedGroup = null, onSelectGroup }: ConnectionPanelProps) {
   const isConnected = status.status === 'connected';
   const isConnecting = status.status === 'connecting';
 
@@ -66,6 +69,26 @@ export function ConnectionPanel({ status, onConnect, onDisconnect }: ConnectionP
                 <p className="text-sm text-muted-foreground">Seu bot está ativo e funcionando</p>
               </div>
             </div>
+            {groups && groups.length > 0 && (
+              <div className="p-3 bg-secondary/50 rounded-lg">
+                <label className="text-sm text-muted-foreground">Selecione o grupo</label>
+                <select value={selectedGroup ?? ''} onChange={(e) => onSelectGroup && onSelectGroup(e.target.value)} className="w-full mt-2 p-2 rounded border border-border">
+                  {groups.map(g => (
+                    <option key={g.id} value={g.id}>{g.nome} ({g.membros})</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {status.qrCode && (
+              <div className="flex items-center justify-center p-4 bg-secondary/50 rounded-lg">
+                <div className="text-center space-y-2">
+                  <img src={status.qrCode} alt="QR Code" className="h-24 w-24 mx-auto" />
+                  <p className="text-xs text-muted-foreground">
+                    QR Code usado para conectar (já conectado)
+                  </p>
+                </div>
+              </div>
+            )}
             <Button variant="destructive" className="w-full" onClick={onDisconnect}>
               <WifiOff className="h-4 w-4 mr-2" />
               Desconectar
