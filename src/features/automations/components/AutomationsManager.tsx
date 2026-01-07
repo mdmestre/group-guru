@@ -292,7 +292,7 @@ function CreateAutomationDialog({
           position: { x: 250, y: 100 },
           data: {
             triggerType,
-            label: `Trigger: ${triggerType}`
+            config: {}
           }
         }
       ],

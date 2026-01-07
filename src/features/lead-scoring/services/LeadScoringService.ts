@@ -56,7 +56,8 @@ export class LeadScoringService {
         const matched = await this.evaluateRule(rule, contact.rows[0]);
         if (matched) {
           totalScore += rule.points;
-          if (rule.rule_type === 'interaction') {
+          const ruleType = (rule as any).rule_type ?? (rule as any).ruleType;
+          if (ruleType === 'interaction') {
             engagementScore += rule.points;
           }
           breakdown[rule.name] = {
@@ -118,9 +119,10 @@ export class LeadScoringService {
    */
   private async evaluateRule(rule: any, contact: any): Promise<boolean> {
     try {
-      const { rule_type, condition } = rule;
+      const ruleType = (rule as any).rule_type ?? (rule as any).ruleType;
+      const condition = (rule as any).condition;
 
-      switch (rule_type) {
+      switch (ruleType) {
         case 'interaction':
           return await this.evaluateInteractionRule(contact, condition);
         case 'field_value':
@@ -284,12 +286,12 @@ export class LeadScoringService {
       const previous = await this.getLeadScore(contactId);
 
       // Build previous scores history
-      const previousScores = previous?.previous_scores || [];
+      const previousScores = ((previous as any)?.previous_scores ?? (previous as any)?.previousScores ?? []) as any[];
       if (previous) {
         previousScores.unshift({
-          score: previous.total_score,
-          breakdown: previous.score_breakdown,
-          timestamp: previous.updated_at
+          score: (previous as any).total_score ?? (previous as any).totalScore,
+          breakdown: (previous as any).score_breakdown ?? (previous as any).scoreBreakdown,
+          timestamp: (previous as any).updated_at ?? (previous as any).updatedAt
         });
       }
 

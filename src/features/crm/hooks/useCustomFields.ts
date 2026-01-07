@@ -42,7 +42,7 @@ export const useCustomFields = (filters?: any) => {
   return useQuery({
     queryKey: customFieldKeys.list(filters),
     queryFn: async () => {
-      const { data } = await api.get('/api/custom-fields', { params: filters });
+      const { data } = await api.get<any>('/api/custom-fields', { params: filters });
       // Handle different response formats
       if (Array.isArray(data)) {
         return data as CustomField[];
@@ -62,7 +62,7 @@ export const useCustomField = (id: string) => {
   return useQuery({
     queryKey: customFieldKeys.detail(id),
     queryFn: async () => {
-      const { data } = await api.get(`/api/custom-fields/${id}`);
+       const { data } = await api.get<any>(`/api/custom-fields/${id}`);
       return data as CustomField;
     },
     enabled: !!id,
@@ -73,7 +73,7 @@ export const useCustomFieldValues = (contactId: string) => {
   return useQuery({
     queryKey: customFieldKeys.values(contactId),
     queryFn: async () => {
-      const { data } = await api.get(`/api/custom-fields/values/${contactId}`);
+      const { data } = await api.get<any>(`/api/custom-fields/values/${contactId}`);
       return data as CustomFieldValue[];
     },
     enabled: !!contactId,
@@ -179,7 +179,7 @@ export const useBulkSetFieldValues = (fieldId: string) => {
 export const useValidateFieldValue = (fieldId: string) => {
   return useMutation({
     mutationFn: async (value: any) => {
-      const response = await api.get(`/api/custom-fields/${fieldId}/validation`, { params: { value } });
+       const response = await api.get<any>(`/api/custom-fields/${fieldId}/validation`, { params: { value } });
       return response.data as { valid: boolean; errors?: string[] };
     },
   });

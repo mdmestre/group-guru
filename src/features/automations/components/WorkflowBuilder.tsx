@@ -137,11 +137,18 @@ export function WorkflowBuilder({
         x: Math.random() * 400 + 100,
         y: Math.random() * 400 + 100
       },
-      data: {
-        label: `New ${newNodeType}`,
-        ...(newNodeType === 'trigger' && { triggerType: 'message_received' }),
-        ...(newNodeType === 'action' && { actionType: 'send_message' })
-      }
+      data:
+        newNodeType === 'trigger'
+          ? { triggerType: 'message_received', config: {} }
+          : newNodeType === 'action'
+            ? { actionType: 'send_message', config: {} }
+            : newNodeType === 'condition'
+              ? { conditions: [], logic: 'AND' }
+              : newNodeType === 'delay'
+                ? { delayType: 'minutes', delayValue: 5 }
+                : newNodeType === 'split'
+                  ? { paths: [] }
+                  : { prompt: '' }
     };
 
     setNodes((nds) => [...nds, newNode]);

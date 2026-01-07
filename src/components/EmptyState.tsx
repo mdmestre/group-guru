@@ -9,6 +9,9 @@ interface EmptyStateProps {
   icon?: React.ReactNode;
   title: string;
   description?: string;
+  /** Optional fully custom action (e.g. a Button) */
+  action?: React.ReactNode;
+  /** Simple action mode */
   actionLabel?: string;
   onAction?: () => void;
   fullHeight?: boolean;
@@ -18,6 +21,7 @@ export function EmptyState({
   icon,
   title, 
   description,
+  action,
   actionLabel,
   onAction,
   fullHeight = true 
@@ -33,10 +37,14 @@ export function EmptyState({
           <p className="text-neutral-600 max-w-sm">{description}</p>
         )}
       </div>
-      {actionLabel && onAction && (
-        <Button onClick={onAction} variant="default">
-          {actionLabel}
-        </Button>
+      {action ? (
+        action
+      ) : (
+        actionLabel && onAction && (
+          <Button onClick={onAction} variant="default">
+            {actionLabel}
+          </Button>
+        )
       )}
     </div>
   );

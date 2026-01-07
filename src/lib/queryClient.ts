@@ -41,9 +41,9 @@ export const queryClient = new QueryClient({
       /**
        * Refetch policies
        */
-      refetchOnWindowFocus: 'stale', // Refetch apenas se stale ao retomar aba
-      refetchOnReconnect: 'stale',   // Refetch ao reconectar internet
-      refetchOnMount: 'stale',       // Refetch ao montar se stale
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
+      refetchOnMount: true,
     },
     mutations: {
       /**

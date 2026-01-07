@@ -22,7 +22,7 @@ export interface Company {
   id: string;
   name: string;
   slug: string;
-  role: string;
+  role?: string;
 }
 
 interface CompanySelectorProps {
@@ -85,7 +85,7 @@ export function CompanySelector({
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-[500px]" closeButton={false}>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Selecione um Workspace</DialogTitle>
           <DialogDescription>
@@ -124,9 +124,9 @@ export function CompanySelector({
                     <p className="text-sm text-muted-foreground truncate">
                       {company.slug}
                     </p>
-                  </div>
-                </div>
-                {getRoleBadge(company.role)}
+                   </div>
+                 </div>
+                 {getRoleBadge(company.role || 'member')}
               </div>
             </button>
           ))}

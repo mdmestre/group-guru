@@ -8,6 +8,7 @@ export interface Contact {
   jid: string; // WhatsApp JID
   name: string;
   phone: string;
+  email?: string;
   profilePictureUrl?: string;
   
   // Engagement

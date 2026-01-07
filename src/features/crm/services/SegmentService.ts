@@ -58,14 +58,16 @@ export class SegmentService {
       // Cache members
       await this.refreshSegmentMembers(segment.id, evalResult.contactIds);
 
-      logger.logInfo('Segment created', {
-        segmentId: segment.id,
-        companyId,
-        name: input.name,
-        memberCount: evalResult.count
-      });
+       logger.logInfo('Segment created', {
+         segmentId: segment.id,
+         companyId,
+         name: input.name,
+         memberCount: evalResult.count
+       });
 
-      return await this.getSegmentById(segment.id) as Promise<Segment>;
+       const created = await this.getSegmentById(segment.id);
+       if (!created) throw new Error('Failed to fetch created segment');
+       return created;
     } catch (error) {
       logger.logError('Error creating segment', error as Error, { companyId });
       throw new Error('Failed to create segment');
