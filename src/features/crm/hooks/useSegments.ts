@@ -50,7 +50,7 @@ export const useSegments = (filters?: any) => {
   return useQuery({
     queryKey: segmentKeys.list(filters),
     queryFn: async () => {
-      const { data } = await api.get('/api/segments', { params: filters });
+      const { data } = await api.get<any>('/api/segments', { params: filters });
       // Handle different response formats
       if (Array.isArray(data)) {
         return data as Segment[];
@@ -70,7 +70,7 @@ export const useSegment = (id: string) => {
   return useQuery({
     queryKey: segmentKeys.detail(id),
     queryFn: async () => {
-      const { data } = await api.get(`/api/segments/${id}`);
+      const { data } = await api.get<any>(`/api/segments/${id}`);
       return data as Segment;
     },
     enabled: !!id,
@@ -81,7 +81,7 @@ export const useSegmentMembers = (segmentId: string, page?: number) => {
   return useQuery({
     queryKey: [...segmentKeys.members(segmentId), page],
     queryFn: async () => {
-      const { data } = await api.get(`/api/segments/${segmentId}/members`, {
+      const { data } = await api.get<any>(`/api/segments/${segmentId}/members`, {
         params: { page, limit: 50 },
       });
       return data as {

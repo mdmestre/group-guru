@@ -38,7 +38,7 @@ export const useLeadScore = (contactId: string) => {
   return useQuery({
     queryKey: leadScoringKeys.score(contactId),
     queryFn: async () => {
-      const { data } = await api.get(`/api/lead-scoring/${contactId}`);
+      const { data } = await api.get<any>(`/api/lead-scoring/${contactId}`);
       return data as LeadScore;
     },
     enabled: !!contactId,
@@ -49,7 +49,7 @@ export const useScoringRules = () => {
   return useQuery({
     queryKey: leadScoringKeys.rules(),
     queryFn: async () => {
-      const { data } = await api.get('/api/lead-scoring/rules');
+      const { data } = await api.get<any>('/api/lead-scoring/rules');
       // Handle different response formats
       if (Array.isArray(data)) {
         return data as LeadScoringRule[];
@@ -69,7 +69,7 @@ export const useScoringRule = (id: string) => {
   return useQuery({
     queryKey: leadScoringKeys.rule(id),
     queryFn: async () => {
-      const { data } = await api.get(`/api/lead-scoring/rules/${id}`);
+      const { data } = await api.get<any>(`/api/lead-scoring/rules/${id}`);
       return data as LeadScoringRule;
     },
     enabled: !!id,
@@ -80,7 +80,7 @@ export const useLeadsByScoreRange = (params?: GetLeadsByScoreParams) => {
   return useQuery({
     queryKey: leadScoringKeys.leadsByScore(),
     queryFn: async () => {
-      const { data } = await api.get('/api/lead-scoring/leads/by-score', { params });
+      const { data } = await api.get<any>('/api/lead-scoring/leads/by-score', { params });
       return data as Array<{
         contactId: string;
         name: string;

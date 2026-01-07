@@ -8,13 +8,15 @@ import { Button } from '@/components/ui/button';
 interface ErrorStateProps {
   title?: string;
   message: string;
+  subtitle?: string;
   onRetry?: () => void;
   fullHeight?: boolean;
 }
 
 export function ErrorState({ 
   title = 'Erro ao Carregar', 
-  message, 
+  message,
+  subtitle,
   onRetry,
   fullHeight = true 
 }: ErrorStateProps) {
@@ -23,7 +25,8 @@ export function ErrorState({
       <AlertCircle className="h-12 w-12 text-red-600" />
       <div className="text-center">
         <h3 className="text-lg font-semibold text-neutral-900 mb-1">{title}</h3>
-        <p className="text-neutral-600 mb-4 max-w-sm">{message}</p>
+        <p className="text-neutral-600 max-w-sm">{message}</p>
+        {subtitle && <p className="text-neutral-500 mt-1 max-w-sm">{subtitle}</p>}
       </div>
       {onRetry && (
         <Button onClick={onRetry} variant="default">
