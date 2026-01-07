@@ -2,12 +2,13 @@
  * WhatsApp Connections Hook
  * 
  * Manages WhatsApp connection instances via API.
+ * Synchronized with backend repository: database/repositories/WhatsAppConnectionRepository.js
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiFetch } from '@/lib/api';
-import { WhatsAppInstance } from '@/types/whatsapp';
+import { WhatsAppInstance, mapBackendToInstance, MAX_INSTANCES_PER_COMPANY } from '@/types/whatsapp';
 import { toast } from 'sonner';
 
 export function useWhatsAppConnections() {
@@ -17,11 +18,11 @@ export function useWhatsAppConnections() {
   const [stats, setStats] = useState({
     total: 0,
     active: 0,
-    limit: 10,
-    remaining: 10
+    limit: MAX_INSTANCES_PER_COMPANY,
+    remaining: MAX_INSTANCES_PER_COMPANY
   });
 
-  // Fetch connections
+  // Fetch connections from API
   const fetchConnections = useCallback(async () => {
     if (!company?.id || !token) return;
 
@@ -29,25 +30,10 @@ export function useWhatsAppConnections() {
       setIsLoading(true);
       const data = await apiFetch('/connections');
       
-      if (data.success) {
-        type RawConn = Record<string, unknown>;
-        const formatted = data.connections.map((conn: RawConn) => {
-          const raw = conn as RawConn;
-          return {
-            id: String(raw.id ?? ''),
-            name: String(raw.name ?? ''),
-            connectionId: String(raw.connectionId ?? ''), // Backend connection_id
-            phoneNumber: String(raw.phoneNumber ?? ''),
-            status: (raw.status as WhatsAppInstance['status']) || 'disconnected',
-            qrCode: (raw.qrCode as string) || undefined,
-            lastActivity: raw.lastActivity ? new Date(String(raw.lastActivity)) : undefined,
-            createdAt: new Date(String(raw.createdAt ?? Date.now())),
-            errorMessage: (raw.errorMessage as string) || undefined,
-            batteryLevel: typeof raw.batteryLevel === 'number' ? (raw.batteryLevel as number) : undefined,
-            isCharging: Boolean(raw.isCharging)
-          };
-        });
-
+      if (data.success && Array.isArray(data.connections)) {
+        const formatted = data.connections.map((conn: Record<string, unknown>) => 
+          mapBackendToInstance(conn)
+        );
         setInstances(formatted);
       }
     } catch (error) {

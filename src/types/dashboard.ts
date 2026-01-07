@@ -38,6 +38,7 @@ export interface DashboardActivity {
 export interface DashboardConnectionStatus {
   id: string;
   name: string;
+  phoneNumber?: string;
   status: 'connected' | 'disconnected' | 'connecting' | 'error';
   lastActivity: string;
   messageCount: number;

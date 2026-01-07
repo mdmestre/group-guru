@@ -43,8 +43,9 @@ export function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        <Route path="/app" element={<WhatsAppConnections />} />
+        <Route path="/app" element={<Navigate to="/app/dashboard" replace />} />
         <Route path="/app/dashboard" element={<DashboardPage />} />
+        <Route path="/app/connections" element={<WhatsAppConnections />} />
         <Route path="/app/crm" element={<CRMPage />} />
         <Route path="/app/conversations" element={<ConversationsPage />} />
         <Route path="/app/settings" element={<div>Configurações (em desenvolvimento)</div>} />
