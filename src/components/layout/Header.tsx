@@ -1,4 +1,4 @@
-import { MessageCircle, Menu, X, Users } from "lucide-react";
+import { MessageCircle, Menu, X, Users, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -34,6 +34,16 @@ export function Header() {
                 isActive("/") ? "text-primary" : "text-muted-foreground hover:text-primary"
               )}
             >
+              Painel
+            </Link>
+            <Link 
+              to="/dashboard" 
+              className={cn(
+                "text-sm font-medium transition-colors flex items-center gap-1",
+                isActive("/dashboard") ? "text-primary" : "text-muted-foreground hover:text-primary"
+              )}
+            >
+              <LayoutDashboard className="h-4 w-4" />
               Dashboard
             </Link>
             <Link 
@@ -46,9 +56,6 @@ export function Header() {
               <Users className="h-4 w-4" />
               CRM
             </Link>
-            <a href="#" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-              Relatórios
-            </a>
             <a href="#" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
               Ajuda
             </a>
@@ -84,6 +91,17 @@ export function Header() {
               )}
               onClick={() => setMobileMenuOpen(false)}
             >
+              Painel
+            </Link>
+            <Link 
+              to="/dashboard" 
+              className={cn(
+                "px-3 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2",
+                isActive("/dashboard") ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-secondary"
+              )}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <LayoutDashboard className="h-4 w-4" />
               Dashboard
             </Link>
             <Link 
@@ -97,9 +115,6 @@ export function Header() {
               <Users className="h-4 w-4" />
               CRM
             </Link>
-            <a href="#" className="px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary rounded-lg transition-colors">
-              Relatórios
-            </a>
             <a href="#" className="px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary rounded-lg transition-colors">
               Ajuda
             </a>

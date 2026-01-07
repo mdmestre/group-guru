@@ -5,21 +5,26 @@
 
 import { z } from 'zod';
 
-// Auth schemas
+// Auth schemas - body only
 export const registerSchema = z.object({
   body: z.object({
     email: z.string().email('Invalid email address'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
     name: z.string().optional(),
+    companyName: z.string().min(1, 'Company name is required'),
     clientId: z.string().optional(),
   }),
+  query: z.record(z.any()).optional(),
+  params: z.record(z.any()).optional(),
 });
 
 export const loginSchema = z.object({
   body: z.object({
     email: z.string().email('Invalid email address'),
-    password: z.string().min(1, 'Password is required'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
   }),
+  query: z.record(z.any()).optional(),
+  params: z.record(z.any()).optional(),
 });
 
 // Contact schemas

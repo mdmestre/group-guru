@@ -32,15 +32,23 @@ export const securityHeaders = helmet({
  */
 export const corsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Whitelist of allowed origins
     const whitelist = [
       'http://localhost:3000',
       'http://localhost:5173',
       'http://localhost:3001',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1:3001',
       process.env.FRONTEND_URL,
       process.env.VITE_API_URL,
     ].filter(Boolean);
 
-    if (!origin || whitelist.includes(origin)) {
+    // Allow requests without origin (same-origin requests, file://, etc)
+    // Allow all origins in development (when NODE_ENV is development)
+    if (!origin || process.env.NODE_ENV === 'development') {
+      callback(null, true);
+    } else if (whitelist.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));

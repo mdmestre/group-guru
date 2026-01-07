@@ -95,6 +95,9 @@ function requireClient(req, res, next) {
 const server = http.createServer(app);
 const io = new IOServer(server, { cors: { origin: "*" } });
 
+// Make io available globally for routes
+global.io = io;
+
 /* ================== MONGODB SETUP ================== */
 // Optional hardcoded URI (can be overridden by environment variables)
 const MONGO_URI = "mongodb+srv://senhorpv1234_db_user:j9fKaROVb6XPKHot@cluster0.grzbazf.mongodb.net/saas_whatsapp?retryWrites=true&w=majority";
@@ -965,6 +968,18 @@ async function startBot() {
     const dashboardModule = await import('./routes/dashboard.js');
     const adminModule = await import('./routes/admin.js');
     
+    // PHASE 2 CRM Advanced Features
+    const pipelineRoutes = await import('./routes/pipelines.js');
+    const leadScoringRoutes = await import('./routes/lead-scoring.js');
+    const customFieldsRoutes = await import('./routes/custom-fields.js');
+    const segmentsRoutes = await import('./routes/segments.js');
+    
+    // PHASE 3 Intelligent Automations
+    const automationRoutes = await import('./routes/automations.js');
+    
+    // PHASE 4 Integrations
+    const integrationsRoutes = await import('./routes/integrations.js');
+    
     app.use('/auth', authModule.default);
     app.use('/companies', companyModule.default);
     app.use('/users', userModule.default);
@@ -975,12 +990,40 @@ async function startBot() {
     app.use('/dashboard', dashboardModule.default);
     app.use('/admin', adminModule.default);
     
+    // Register PHASE 2 routes
+    app.use('/api', pipelineRoutes.default);
+    app.use('/api', leadScoringRoutes.default);
+    app.use('/api', customFieldsRoutes.default);
+    app.use('/api', segmentsRoutes.default);
+    
+    // Register PHASE 3 routes
+    app.use('/api', automationRoutes.default);
+    
+    // Register PHASE 4 routes
+    app.use('/api/integrations', integrationsRoutes.default);
+    
+    // Initialize Socket.IO in routes
+    if (pipelineRoutes.setSocketIO) {
+      pipelineRoutes.setSocketIO(io);
+    }
+    if (leadScoringRoutes.setSocketIO) {
+      leadScoringRoutes.setSocketIO(io);
+    }
+    if (segmentsRoutes.setSocketIO) {
+      segmentsRoutes.setSocketIO(io);
+    }
+    if (customFieldsRoutes.setSocketIO) {
+      customFieldsRoutes.setSocketIO(io);
+    }
+    
     // Initialize connections routes with Socket.IO
     if (connectionsModule.initializeConnectionsRoutes) {
       connectionsModule.initializeConnectionsRoutes(io);
     }
     
     console.log('✅ Multi-tenant routes loaded');
+    console.log('✅ PHASE 2 CRM Advanced Features loaded (Pipelines, Lead Scoring, Custom Fields, Segments)');
+    console.log('✅ PHASE 3 Intelligent Automations loaded (Workflow Builder, AI Integration)');
   } catch (error) {
     console.error('⚠️  Failed to load multi-tenant routes:', error.message);
     console.log('⚠️  Legacy auth endpoints will be used');
@@ -1645,7 +1688,7 @@ app.get('/crm/messages/:phone', (req, res) => {
 });
 
 // Error logging middleware (deve estar antes de initMongo)
-app.use(errorLoggingMiddleware);
+// app.use(errorLoggingMiddleware);
 
 // Initialize Mongo (if configured) then start server
 initMongo().then(() => {

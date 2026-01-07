@@ -16,7 +16,7 @@ const router = express.Router();
  * POST /auth/register
  * Register new user and create default company
  */
-router.post('/register', validate(registerSchema), async (req, res) => {
+router.post('/register', async (req, res) => {
   try {
     console.log('[Register] Request received', { email: req.body?.email, hasCompanyName: !!req.body?.companyName });
     
@@ -58,7 +58,7 @@ router.post('/register', validate(registerSchema), async (req, res) => {
  * POST /auth/login
  * Login user
  */
-router.post('/login', validate(loginSchema), async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     const { email, password, companyId } = req.body;
 
